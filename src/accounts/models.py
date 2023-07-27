@@ -8,17 +8,7 @@ from django.utils.translation import gettext_lazy as _
 from ..base.models import TimeStampedModel
 from .managers import UserManager, PasswordResetCodeManager
 
-
-# Sending Email
-from django.core.mail import EmailMultiAlternatives
-from django.db import models
-from django.template.loader import render_to_string
-
-logger = logging.getLogger(__name__)
-
-
 # Create your models here.
-
 
 class User(AbstractBaseUser, TimeStampedModel):
     first_name = models.CharField(max_length=128, blank=True, null=True, default='')
@@ -63,40 +53,6 @@ class AbstractBaseCode(TimeStampedModel):
 
     class Meta:
         abstract = True
-
-    def send_email(self):
-        subject = "Reset Your Password"
-        text_content = """Reset your password by clicking on this link:
-                      %s{{ uid }}/{{ timestamp }}/{{ signature }}/{{  code }}
-        """ % (settings.PASSWORD_RESET_URL)
-        # subject = render_to_string(subject_file).strip()
-        from_email = settings.DEFAULT_EMAIL_FROM
-        to = self.user.email
-        # bcc_email = settings.DEFAULT_EMAIL_BCC
-        # Make some context available
-        ctxt = {
-            'url': settings.PASSWORD_RESET_URL,
-            'email': self.user.email,
-            'first_name': self.user.first_name,
-            'last_name': self.user.last_name,
-            'code': (self.code).decode(),
-            'uid': self.uid,
-            'timestamp': self.timestamp,
-            'signature': self.signature
-
-        }
-        # text_content = render_to_string(txt_file, ctxt)
-        html_content = render_to_string('email/password_reset.html', ctxt)
-        try:
-            msg = EmailMultiAlternatives(subject, text_content, from_email, [to])
-            msg.attach_alternative(html_content, 'text/html')
-            msg.send()
-            print("Email Sent successfully")
-        except Exception:
-            logger.exception("Unable to send the mail.")
-
-    def __unicode__(self):
-        return "{0}, {1}, {2}, {3}".format(self.code, self.uid, self.timestamp, self.signature)
 
 
 class PasswordResetCode(AbstractBaseCode):
