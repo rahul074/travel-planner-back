@@ -105,7 +105,6 @@ class UserViewSet(viewsets.ModelViewSet):
     @action(detail=False, methods=['POST'])
     def superadmin_password_reset(self, request):
         data = request.data.copy()
-        print("--------------------", data)
         user_id = data.get('user', None)
         password = data.get('password', None)
         if user_id:

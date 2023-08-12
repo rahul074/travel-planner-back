@@ -52,8 +52,6 @@ LIBS = [
 
 APPS = [
     'src.accounts',
-    'src.adminapp',
-    'src.user',
     'src.base'
 ]
 
