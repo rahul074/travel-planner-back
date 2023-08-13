@@ -36,3 +36,4 @@ class UserPermissions(ResourcePermission):
     employee_list_perms = HRPerm()
     separated_list_perms = HRPerm()
     superadmin_password_reset_perms = HRPerm()
+    chatgpt_perms = AllowAny()

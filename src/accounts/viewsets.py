@@ -1,9 +1,12 @@
+import openai
+
 from rest_framework import viewsets
 from django.contrib.auth import logout, get_user_model
 from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
 from rest_framework.authtoken.models import Token
 from rest_framework.decorators import action
+from decouple import config
 
 from .filters import UserBasicFilter
 from .models import User
@@ -120,3 +123,34 @@ class UserViewSet(viewsets.ModelViewSet):
                 return response.BadRequest({"detail": "Password is Null."})
             return response.BadRequest({"detail": "User Doesn't exist."})
         return response.BadRequest({"detail": "User is required."})
+
+    @action(detail=False, methods=['POST'])
+    def chatgpt(self, request):
+        data = request.data.copy()
+        # Replace with your OpenAI API key
+        # place_a = "Adimaly"
+        # place_b = "Panickankudy"
+        place_a = data.get('form')
+        place_b = data.get('destination')
+        prompt = f"I am seeking a list of tourist attractions situated between {place_a} and {place_b}." \
+                 f" These attractions should be relatively close to the mentioned locations and not far away." \
+                 f" Additionally, I would like the latitude and longitude coordinates for each attraction."
+        second = " the output should be like theis ['name, latitude, longitude', 'name, latitude, longitude']"
+        prompt = prompt + second
+        attractions_list = []
+        try:
+            result = openai.Completion.create(
+                engine="text-davinci-003",  # Choose the engine that suits your needs
+                prompt=prompt,
+                max_tokens=200,
+                api_key=config('CHAT_GPT_KEY')
+            )
+            lines = result.choices[0].text.strip().split('\n')
+            for line in lines:
+                parts = line.split(', ')
+                attr_dict = {'name': parts[0].split('. ')[-1], 'latitude': parts[1], 'longitude': parts[2]}
+                attractions_list.append(attr_dict)
+        except Exception as e:
+            pass
+        # attractions_list = [{'name': 'Kodanad View Point', 'latitude': '10.3663070', 'longitude': '76.8326035 '}, {'name': 'Waterfall Point', 'latitude': '10.3358257', 'longitude': '76.8017130'}, {'name': 'Periyar Tiger Trail', 'latitude': '10.3140375', 'longitude': '76.7675900'}, {'name': 'Adimali Agraharam', 'latitude': '10.3427272', 'longitude': '76.7314500'}, {'name': 'Kallar Estate', 'latitude': '10.1486980', 'longitude': '76.8158960'}, {'name': 'Chellarkovil View Point', 'latitude': '10.2703500', 'longitude': '76.6234200'}, {'name': 'Siruvani Hill View Point', 'latitude': '10.3246193', 'longitude': '76.9089900'}, {'name': 'Jayamkondam', 'latitude': '10.4395690', 'longitude': '76.7631335'}]
+        return response.Ok(attractions_list)
