@@ -135,7 +135,7 @@ class UserViewSet(viewsets.ModelViewSet):
         prompt = f"I am seeking a list of tourist attractions situated between {place_a} and {place_b}." \
                  f" These attractions should be relatively close to the mentioned locations and not far away." \
                  f" Additionally, I would like the latitude and longitude coordinates for each attraction."
-        second = " the output should be like theis ['name, latitude, longitude', 'name, latitude, longitude']"
+        second = " the output should be like theis ['name, latitude, longitude', 'name, latitude, longitude'](give me the latitude and longitude in decimal degrees)"
         prompt = prompt + second
         attractions_list = []
         try:
