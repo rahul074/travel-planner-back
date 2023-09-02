@@ -2,7 +2,7 @@ from django.contrib.auth import get_user_model
 from django.utils.translation import gettext_lazy as _
 from rest_framework import serializers
 
-from .models import User
+from .models import User, UserSearches
 from ..base.serializers import ModelSerializer
 
 
@@ -81,3 +81,15 @@ class PasswordChangeSerializer(serializers.Serializer):
                         'null': 'Please enter a valid password.',
                         'min_length': 'Password should have minimum 8 characters.'}
     )
+
+
+class UserSearchesSerializer(ModelSerializer):
+    user_data = serializers.SerializerMethodField(required=False)
+
+    class Meta:
+        model = UserSearches
+        fields = '__all__'
+
+    @staticmethod
+    def get_user_data(obj):
+        return UserBasicDataSerializer(obj.user).data if obj.user else None

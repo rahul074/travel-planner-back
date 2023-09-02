@@ -5,9 +5,9 @@ from django.conf import settings
 from django.contrib.auth.models import AbstractBaseUser
 from django.utils.translation import gettext_lazy as _
 
-
 from ..base.models import TimeStampedModel
 from .managers import UserManager, PasswordResetCodeManager
+
 
 # Create your models here.
 
@@ -63,3 +63,9 @@ class PasswordResetCode(AbstractBaseCode):
     def send_password_reset_email(self):
         self.send_email()
 
+
+class UserSearches(TimeStampedModel):
+    user = models.ForeignKey(User, blank=True, null=True, on_delete=models.PROTECT, related_name='user_searches_user')
+    origin = models.CharField(max_length=255, blank=True, null=True)
+    destination = models.CharField(max_length=255, blank=True, null=True)
+    is_active = models.BooleanField(default=True)

@@ -1,5 +1,4 @@
-from ..base.api.permissions import (AllowAny, IsAuthenticated, HRPerm, EmployeePerm, ApprovalPerm, NoDuesPerm, IsSuperUser,
-                                    PermissionComponent, ResourcePermission)
+from ..base.api.permissions import (AllowAny, IsAuthenticated, IsSuperUser, PermissionComponent, ResourcePermission)
 
 
 class IsTheSameUser(PermissionComponent):
@@ -33,7 +32,8 @@ class UserPermissions(ResourcePermission):
     user_clone_perms = AllowAny()
     google_signup_perms = AllowAny()
     facebook_signup_perms = AllowAny()
-    employee_list_perms = HRPerm()
-    separated_list_perms = HRPerm()
-    superadmin_password_reset_perms = HRPerm()
+    employee_list_perms = IsAuthenticated()
+    separated_list_perms = IsAuthenticated()
+    superadmin_password_reset_perms = IsAuthenticated()
     chatgpt_perms = AllowAny()
+    user_searches_perms = IsAuthenticated()

@@ -1,7 +1,7 @@
 import django_filters
 from django.db.models import Q
 
-from .models import User
+from .models import User, UserSearches
 
 
 class UserBasicFilter(django_filters.FilterSet):
@@ -28,3 +28,14 @@ class UserBasicFilter(django_filters.FilterSet):
                 email__icontains=value) | Q(id__exact=value) | Q(
                 address__icontains=value)
         )
+
+
+class UserSearchesFilter(django_filters.FilterSet):
+    class Meta:
+        model = UserSearches
+        fields = {
+            'id': ['exact'],
+            'user': ['exact'],
+            'origin': ['exact', 'icontains'],
+            'destination': ['exact', 'icontains'],
+        }

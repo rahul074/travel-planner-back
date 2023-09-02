@@ -8,9 +8,9 @@ from rest_framework.authtoken.models import Token
 from rest_framework.decorators import action
 from decouple import config
 
-from .filters import UserBasicFilter
-from .models import User
-from .serializers import UserSerializer, UserBasicDataSerializer
+from .filters import UserBasicFilter, UserSearchesFilter
+from .models import User, UserSearches
+from .serializers import UserSerializer, UserBasicDataSerializer, UserSearchesSerializer
 from .services import auth_login, auth_register_user, auth_password_change
 from ..base import response
 from ..base.serializers import SawaggerResponseSerializer
@@ -66,7 +66,7 @@ class UserViewSet(viewsets.ModelViewSet):
     @action(methods=['GET'], detail=False, pagination_class=StandardResultsSetPagination)
     def users_list(self, request):
         queryset = User.objects.filter(is_active=True, is_separated=False, is_superuser=False,
-                                                   is_staff=False)
+                                       is_staff=False)
         queryset = queryset.order_by('first_name', 'last_name')
         self.filterset_class = UserBasicFilter
         queryset = self.filter_queryset(queryset)
@@ -132,6 +132,7 @@ class UserViewSet(viewsets.ModelViewSet):
         # place_b = "Panickankudy"
         place_a = data.get('form')
         place_b = data.get('destination')
+        UserSearches.objects.create(origin=place_a, destination=place_b, user=request.user.pk)
         prompt = f"I am seeking a list of tourist attractions situated between {place_a} and {place_b}." \
                  f" These attractions should be relatively close to the mentioned locations and not far away." \
                  f" Additionally, I would like the latitude and longitude coordinates for each attraction."
@@ -154,3 +155,13 @@ class UserViewSet(viewsets.ModelViewSet):
             pass
         # attractions_list = [{'name': 'Kodanad View Point', 'latitude': '10.3663070', 'longitude': '76.8326035 '}, {'name': 'Waterfall Point', 'latitude': '10.3358257', 'longitude': '76.8017130'}, {'name': 'Periyar Tiger Trail', 'latitude': '10.3140375', 'longitude': '76.7675900'}, {'name': 'Adimali Agraharam', 'latitude': '10.3427272', 'longitude': '76.7314500'}, {'name': 'Kallar Estate', 'latitude': '10.1486980', 'longitude': '76.8158960'}, {'name': 'Chellarkovil View Point', 'latitude': '10.2703500', 'longitude': '76.6234200'}, {'name': 'Siruvani Hill View Point', 'latitude': '10.3246193', 'longitude': '76.9089900'}, {'name': 'Jayamkondam', 'latitude': '10.4395690', 'longitude': '76.7631335'}]
         return response.Ok(attractions_list)
+
+    @action(detail=False, methods=['POST'])
+    def user_searches(self, request):
+        queryset = UserSearches.objects.filter(is_active=True)
+        self.filterset_class = UserSearchesFilter
+        queryset = self.filter_queryset(queryset)
+        page = self.paginate_queryset(queryset)
+        if page is not None:
+            return self.get_paginated_response(UserSearchesSerializer(page, many=True).data)
+        return response.Ok(UserSearchesSerializer(queryset, many=True).data)
