@@ -130,7 +130,7 @@ class UserViewSet(viewsets.ModelViewSet):
         # Replace with your OpenAI API key
         # place_a = "Adimaly"
         # place_b = "Panickankudy"
-        place_a = data.get('form')
+        place_a = data.get('from')
         place_b = data.get('destination')
         UserSearches.objects.create(origin=place_a, destination=place_b, user=request.user)
         prompt = f"I am seeking a list of tourist attractions situated between {place_a} and {place_b}." \
@@ -156,7 +156,7 @@ class UserViewSet(viewsets.ModelViewSet):
         # attractions_list = [{'name': 'Kodanad View Point', 'latitude': '10.3663070', 'longitude': '76.8326035 '}, {'name': 'Waterfall Point', 'latitude': '10.3358257', 'longitude': '76.8017130'}, {'name': 'Periyar Tiger Trail', 'latitude': '10.3140375', 'longitude': '76.7675900'}, {'name': 'Adimali Agraharam', 'latitude': '10.3427272', 'longitude': '76.7314500'}, {'name': 'Kallar Estate', 'latitude': '10.1486980', 'longitude': '76.8158960'}, {'name': 'Chellarkovil View Point', 'latitude': '10.2703500', 'longitude': '76.6234200'}, {'name': 'Siruvani Hill View Point', 'latitude': '10.3246193', 'longitude': '76.9089900'}, {'name': 'Jayamkondam', 'latitude': '10.4395690', 'longitude': '76.7631335'}]
         return response.Ok(attractions_list)
 
-    @action(detail=False, methods=['POST'])
+    @action(detail=False, methods=['GET'])
     def user_searches(self, request):
         queryset = UserSearches.objects.filter(is_active=True)
         self.filterset_class = UserSearchesFilter
