@@ -132,7 +132,7 @@ class UserViewSet(viewsets.ModelViewSet):
         # place_b = "Panickankudy"
         place_a = data.get('form')
         place_b = data.get('destination')
-        UserSearches.objects.create(origin=place_a, destination=place_b, user=request.user.pk)
+        UserSearches.objects.create(origin=place_a, destination=place_b, user=request.user)
         prompt = f"I am seeking a list of tourist attractions situated between {place_a} and {place_b}." \
                  f" These attractions should be relatively close to the mentioned locations and not far away." \
                  f" Additionally, I would like the latitude and longitude coordinates for each attraction."
