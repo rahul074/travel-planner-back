@@ -133,11 +133,22 @@ class UserViewSet(viewsets.ModelViewSet):
         place_a = data.get('from')
         place_b = data.get('destination')
         UserSearches.objects.create(origin=place_a, destination=place_b, user=request.user)
-        prompt = f"I am seeking a list of tourist attractions situated between {place_a} and {place_b}." \
-                 f" These attractions should be relatively close to the mentioned locations and not far away." \
-                 f" Additionally, I would like the latitude and longitude coordinates for each attraction."
-        second = " the output should be like theis ['name, latitude, longitude', 'name, latitude, longitude'](give me the latitude and longitude in decimal degrees)"
-        prompt = prompt + second
+        # prompt = f"I am seeking a list of tourist attractions situated between {place_a} and {place_b}." \
+        #          f" These attractions should be relatively close to the mentioned locations and not far away." \
+        #          f" Additionally, I would like the latitude and longitude coordinates for each attraction."
+        # second = " the output should be like theis ['name, latitude, longitude', 'name, latitude, longitude'](give me the latitude and longitude in decimal degrees)"
+        # prompt = prompt + second
+
+        prompt = f"I'm looking for a compilation of tourist attractions located between {place_a} and {place_b} that are in close proximity to" \
+                 f" these places. Furthermore, I'd like to receive the information for each attraction in a specific format. Each piece of" \
+                 f" information should be structured as a dictionary with the following key-value pairs: 'name' for the attraction's name," \
+                 f"'latitude' for its latitude coordinate in decimal degrees, and 'longitude' for its longitude coordinate in decimal degrees." \
+                 f"This will provide me with an organized output that lists tourist attractions in the format:"
+
+        prompt2 = "[{'name':'xyz', 'latitude':19837982374, 'longitude':00000}, {'name':'xyz', 'latitude':19837982374, 'longitude':00000}], with latitude and longitude coordinates expressed in decimal degrees"
+
+        prompt = prompt + prompt2
+
         attractions_list = []
         try:
             result = openai.Completion.create(
@@ -147,13 +158,25 @@ class UserViewSet(viewsets.ModelViewSet):
                 api_key=config('CHAT_GPT_KEY')
             )
             lines = result.choices[0].text.strip().split('\n')
-            for line in lines:
-                parts = line.split(', ')
-                attr_dict = {'name': parts[0].split('. ')[-1], 'latitude': parts[1], 'longitude': parts[2]}
-                attractions_list.append(attr_dict)
+            result_string = result.choices[0].text.strip()
+            start_index = result_string.find("[{")
+            last_occurrence_index = result_string.rfind("},")
+            if start_index != -1:
+                list_str = result_string[start_index:last_occurrence_index] + "}]"
+                attractions_list = eval(list_str)
+                return response.Ok(attractions_list)
+            # for line in lines:
+            #     parts = line.split(', ')
+            #     attr_dict = {'name': parts[0].split('. ')[-1], 'latitude': parts[1], 'longitude': parts[2]}
+            #     attractions_list.append(attr_dict)
+            # return response.Ok(attractions_list)
         except Exception as e:
             pass
-        # attractions_list = [{'name': 'Kodanad View Point', 'latitude': '10.3663070', 'longitude': '76.8326035 '}, {'name': 'Waterfall Point', 'latitude': '10.3358257', 'longitude': '76.8017130'}, {'name': 'Periyar Tiger Trail', 'latitude': '10.3140375', 'longitude': '76.7675900'}, {'name': 'Adimali Agraharam', 'latitude': '10.3427272', 'longitude': '76.7314500'}, {'name': 'Kallar Estate', 'latitude': '10.1486980', 'longitude': '76.8158960'}, {'name': 'Chellarkovil View Point', 'latitude': '10.2703500', 'longitude': '76.6234200'}, {'name': 'Siruvani Hill View Point', 'latitude': '10.3246193', 'longitude': '76.9089900'}, {'name': 'Jayamkondam', 'latitude': '10.4395690', 'longitude': '76.7631335'}]
+        attractions_list = [{"name": "Tower of London", "latitude": 51.5081, "longitude": -0.0759},
+                            {"name": "The Roman Baths, Bath", "latitude": 51.381, "longitude": -2.3597},
+                            {"name": "Stonehenge", "latitude": 51.1789, "longitude": -1.8262},
+                            {"name": "Liverpool Cathedral", "latitude": 53.4008, "longitude": -2.9782},
+                            {"name": "The Alnwick Castle", "latitude": 55.4657, "longitude": -1.703}]
         return response.Ok(attractions_list)
 
     @action(detail=False, methods=['GET'])
